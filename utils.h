@@ -6,6 +6,7 @@
 void print_error(std::string const& message);
 void close_socket(int descriptor);
 bool check_port(const char* port);
+void write_all(const char* pointer, size_t len, int descriptor);
 
 class descriptor_wrapper {
     int descriptor;
