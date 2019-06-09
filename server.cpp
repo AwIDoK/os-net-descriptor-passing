@@ -49,7 +49,8 @@ int main() {
         return EXIT_FAILURE;
     }
     char buffer[BUFFER_SIZE];
-    while (true) {
+    bool alive = true;
+    while (alive) {
         descriptor_wrapper client_descriptor = accept(descriptor, nullptr, nullptr);
         std::cout << "client with descriptor " << client_descriptor << " connected\n";
         if (client_descriptor < 0) {
@@ -81,12 +82,24 @@ int main() {
         client_write_pipe.~descriptor_wrapper();
         client_read_pipe.~descriptor_wrapper();
         ssize_t len;
-        while ((len = read(read_pipe, &buffer, BUFFER_SIZE - 1)) > 0) {
-            buffer[len] = '\0';
-            std::cout << "received from " << client_descriptor << ": " << buffer << std::endl;
+        while (alive) {
+            std::string received;
+            while ((len = read(read_pipe, &buffer, BUFFER_SIZE - 1)) > 0) {
+                buffer[len] = '\0';
+                received += buffer;
+                if (buffer[len - 1] == '\0') {
+                    break;
+                }
+            }
+            std::cout << "received from " << client_descriptor << ": " << received << std::endl;
             if (strcmp(buffer, "exit") == 0) {
                 break;
             }
+            if (strcmp(buffer, "stop") == 0) {
+                alive = false;
+                break;
+            }
+            write_all(received.c_str(), received.size() + 1, write_pipe);
         }
         std::cout << "client with descriptor " << client_descriptor << " disconnected\n";
     }

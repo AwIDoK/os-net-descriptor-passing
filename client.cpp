@@ -51,6 +51,8 @@ int main() {
         return EXIT_FAILURE;
     }
     std::cout << "Type exit to exit \n";
+    std::cout << "Type stop to stop server\n";
+    char buffer[BUFFER_SIZE];
     while (true) {
         std::cout << "Type message to send: ";
         std::string line;
@@ -61,10 +63,23 @@ int main() {
         if (line.empty()) {
             continue;
         }
-        write_all(line.c_str(), line.size(), write_pipe);
+        write_all(line.c_str(), line.size() + 1, write_pipe);
         if (line == "exit") {
             break;
         }
+        if (line == "stop") {
+            break;
+        }
+        ssize_t len;
+        std::string received;
+        while ((len = read(read_pipe, &buffer, BUFFER_SIZE - 1)) > 0) {
+            buffer[len] = '\0';
+            received += buffer;
+            if (buffer[len - 1] == '\0') {
+                break;
+            }
+        }
+        std::cout << "response: " << received << std::endl;
     }
 
 }
