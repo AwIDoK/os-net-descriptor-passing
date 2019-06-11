@@ -15,7 +15,7 @@ void close_socket(int descriptor) {
 }
 
 void write_all(const char* pointer, size_t len, int descriptor) {
-    size_t result;
+    ssize_t result;
     while (len && (result = write(descriptor, pointer, len))) {
         if (result < 0 && errno == EINTR) {
             continue;
